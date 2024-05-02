@@ -1,35 +1,36 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useEffect, useState } from "react";
+import ScanForm from "./components/ScanForm/ScanForm";
+import ScanResults from "./components/ScanResults/ScanResults";
+import { getScanResults } from "./services/api";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const [scans, setScans] = useState([]);
+
+  useEffect(() => {
+    const fetchScanResults = async () => {
+      try {
+        const results = await getScanResults();
+        setScans(results);
+      } catch (error) {
+        // Handle error
+      }
+    };
+
+    fetchScanResults();
+  }, []);
+
+  const handleScanInitiated = (scanDetails) => {
+    setScans([...scans, scanDetails]);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="app">
+      <h1>OSINT Web Application</h1>
+      <ScanForm onScanInitiated={handleScanInitiated} />
+      <ScanResults scans={scans} />
+    </div>
+  );
+};
 
-export default App
+export default App;
