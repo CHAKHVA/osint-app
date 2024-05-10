@@ -1,9 +1,16 @@
 .app {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-.app h1 {
-  text-align: center;
+.main {
+  flex: 1;
+  padding: 16px;
+}
+
+.scan-button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
 }

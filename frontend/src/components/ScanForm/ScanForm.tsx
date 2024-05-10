@@ -1,35 +1,78 @@
 import React, { useState } from "react";
-import { initiatePostRequest } from "../../services/api";
 import "./ScanForm.css";
+import Button from "../ui/Button";
+import axios from "axios";
+import { Scan } from "../../types/Scan";
 
-const ScanForm = ({ onScanInitiated }) => {
-  const [domain, setDomain] = useState("");
-  const [tool, setTool] = useState("theHarvester");
+interface ScanFormProps {
+  openModal: boolean;
+  onClose: () => void;
+  onScanSubmit: (scan: Scan) => void;
+}
 
-  const handleSubmit = async (e) => {
+enum Tools {
+  theHarvester = "theHarvester",
+  Amass = "Amass",
+}
+
+const ScanForm: React.FC<ScanFormProps> = ({
+  openModal,
+  onClose,
+  onScanSubmit,
+}) => {
+  const [domain, setDomain] = useState<string>("");
+  const [tool, setTool] = useState<Tools>(Tools.theHarvester);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await initiatePostRequest("/scan", { domain, tool });
-      onScanInitiated(response.data);
+      const response = await axios.post("http://localhost:8000/scan", {
+        domain,
+        tool,
+      });
+      onScanSubmit(response.data);
+      setDomain("");
+      setTool(Tools.theHarvester);
+      onClose();
     } catch (error) {
-      // Handle error, e.g., show an error message
+      console.error("Error submitting scan:", error);
     }
   };
 
   return (
-    <form className="scan-form" onSubmit={handleSubmit}>
-      <input
-        type="text"
-        placeholder="Enter domain"
-        value={domain}
-        onChange={(e) => setDomain(e.target.value)}
-      />
-      <select value={tool} onChange={(e) => setTool(e.target.value)}>
-        <option value="theHarvester">theHarvester</option>
-        <option value="Amass">Amass</option>
-      </select>
-      <button type="submit">Scan</button>
-    </form>
+    <>
+      {openModal && (
+        <div className="modal-overlay">
+          <div className="modal-container">
+            <form className="scan-form" onSubmit={handleSubmit}>
+              <h2>Scan Domain</h2>
+              <input
+                type="text"
+                id="domain"
+                name="domain"
+                placeholder="Enter domain"
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+              />
+              <select
+                value={tool}
+                onChange={(e) => setTool(e.target.value as Tools)}
+              >
+                <option value={Tools.theHarvester}>theHarvester</option>
+                <option value={Tools.Amass}>Amass</option>
+              </select>
+              <div className="modal-buttons">
+                <Button text="Scan" buttonType="submit" />
+                <Button text="Cancel" onClick={onClose} />
+              </div>
+            </form>
+            <button className="close-button" onClick={onClose}>
+              &times;
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
